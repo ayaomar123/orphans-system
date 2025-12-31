@@ -1,0 +1,98 @@
+<div class="container page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Orphans</h1>
+      <div class="subtitle">Search and manage orphan profiles</div>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center">
+      <mat-form-field appearance="outline" style="min-width: 260px">
+        <mat-label>Search</mat-label>
+        <input matInput [formControl]="search" placeholder="Name or National ID" />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <button *ngIf="canManage()" mat-raised-button color="primary" (click)="openCreate()">
+        <mat-icon>add</mat-icon>
+        <span style="margin-left: 6px">New</span>
+      </button>
+    </div>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <div class="om-table-wrap">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z0" style="min-width: 900px">
+          <ng-container matColumnDef="fullName">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let o">
+              <div style="font-weight: 600">{{ o.fullName }}</div>
+              <div class="om-muted" style="font-size: 12px">{{ o.nationalId || '—' }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="gender">
+            <th mat-header-cell *matHeaderCellDef>Gender</th>
+            <td mat-cell *matCellDef="let o">{{ o.gender }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="age">
+            <th mat-header-cell *matHeaderCellDef>Age</th>
+            <td mat-cell *matCellDef="let o">{{ o.age }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="city">
+            <th mat-header-cell *matHeaderCellDef>City</th>
+            <td mat-cell *matCellDef="let o">{{ o.city }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="sponsorshipStatus">
+            <th mat-header-cell *matHeaderCellDef>Sponsorship</th>
+            <td mat-cell *matCellDef="let o">{{ o.sponsorshipStatus }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="updatedAt">
+            <th mat-header-cell *matHeaderCellDef>Updated</th>
+            <td mat-cell *matCellDef="let o">{{ o.updatedAt | date: 'mediumDate' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef style="width: 120px">Actions</th>
+            <td mat-cell *matCellDef="let o">
+              <button
+                *ngIf="canManage()"
+                mat-icon-button
+                matTooltip="Edit"
+                (click)="openEdit(o)"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+
+              <button
+                *ngIf="canDelete()"
+                mat-icon-button
+                matTooltip="Delete"
+                (click)="delete(o)"
+              >
+                <mat-icon color="warn">delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="totalCount"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 20]"
+        (page)="pageChanged($event)"
+      />
+
+      <div *ngIf="loading" class="om-muted" style="padding: 12px">Loading...</div>
+    </mat-card-content>
+  </mat-card>
+</div>

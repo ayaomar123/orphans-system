@@ -1,0 +1,77 @@
+<div class="container page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <div class="subtitle">Overview of orphans and events</div>
+    </div>
+    <div class="om-chip-row">
+      <a mat-stroked-button color="primary" routerLink="/orphans">
+        <mat-icon>child_care</mat-icon>
+        <span style="margin-left: 6px">Manage orphans</span>
+      </a>
+      <a mat-stroked-button color="primary" routerLink="/events">
+        <mat-icon>event</mat-icon>
+        <span style="margin-left: 6px">Manage events</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <mat-card class="card-span-6">
+      <mat-card-header>
+        <mat-card-title>Orphans by city</mat-card-title>
+        <mat-card-subtitle>Distribution across locations</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-nav-list *ngIf="(cityStats$ | async) as stats">
+          <div *ngIf="(stats | keyvalue).length === 0" class="om-muted">No data yet</div>
+          <a mat-list-item *ngFor="let item of stats | keyvalue">
+            <span matListItemTitle>{{ item.key }}</span>
+            <mat-chip-set matListItemMeta>
+              <mat-chip color="primary" highlighted>{{ item.value }}</mat-chip>
+            </mat-chip-set>
+          </a>
+        </mat-nav-list>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="card-span-6">
+      <mat-card-header>
+        <mat-card-title>Orphans by age group</mat-card-title>
+        <mat-card-subtitle>Helpful for planning activities</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-nav-list *ngIf="(ageStats$ | async) as stats">
+          <div *ngIf="(stats | keyvalue).length === 0" class="om-muted">No data yet</div>
+          <a mat-list-item *ngFor="let item of stats | keyvalue">
+            <span matListItemTitle>{{ item.key }}</span>
+            <mat-chip-set matListItemMeta>
+              <mat-chip color="accent" highlighted>{{ item.value }}</mat-chip>
+            </mat-chip-set>
+          </a>
+        </mat-nav-list>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="card-span-12">
+      <mat-card-header>
+        <mat-card-title>Upcoming events</mat-card-title>
+        <mat-card-subtitle>Next planned activities</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-nav-list *ngIf="(upcomingEvents$ | async) as events">
+          <div *ngIf="events.length === 0" class="om-muted">No upcoming events</div>
+          <a mat-list-item *ngFor="let e of events" routerLink="/events">
+            <mat-icon matListItemIcon>event</mat-icon>
+            <span matListItemTitle>{{ e.title }}</span>
+            <span matListItemLine>{{ e.location }} • {{ e.startDate | date: 'mediumDate' }}</span>
+            <mat-chip-set matListItemMeta>
+              <mat-chip>{{ e.eventType }}</mat-chip>
+              <mat-chip>Participants: {{ e.participantCount }}</mat-chip>
+            </mat-chip-set>
+          </a>
+        </mat-nav-list>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
