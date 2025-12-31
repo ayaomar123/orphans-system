@@ -150,6 +150,8 @@ orphan-management-ui/
 
 ## 🚦 Getting Started
 
+> **⚡ Quick Start (No Certificate Issues)**: See [QUICK_START_NO_CERTIFICATE_ISSUES.md](./QUICK_START_NO_CERTIFICATE_ISSUES.md) for the fastest way to get running.
+
 ### Backend Setup
 
 1. **Clone the repository**
@@ -174,15 +176,24 @@ orphan-management-ui/
    ```
 
 4. **Run the API**
-   ```bash
-   dotnet run
-   ```
    
-   API will be available at `https://localhost:7001` and `http://localhost:5001`
+   **Option 1: HTTP (No certificate issues - Recommended for development)**
+   ```bash
+   dotnet run --launch-profile http
+   ```
+   API will be available at `http://localhost:5000`
+   
+   **Option 2: HTTPS (Requires trusted certificate)**
+   ```bash
+   dotnet run --launch-profile https
+   ```
+   API will be available at `https://localhost:7001` and `http://localhost:5000`
+   
+   > If you encounter certificate errors with HTTPS, see [CERTIFICATE_FIX.md](./CERTIFICATE_FIX.md)
 
 5. **Access Swagger documentation**
    
-   Navigate to `https://localhost:7001/swagger`
+   Navigate to `http://localhost:5000/swagger` (HTTP) or `https://localhost:7001/swagger` (HTTPS)
 
 ### Frontend Setup
 
@@ -421,6 +432,11 @@ export const environment = {
 ## 🐛 Troubleshooting
 
 ### Backend Issues
+
+**Certificate error: ERR_CERT_AUTHORITY_INVALID**
+- See [CERTIFICATE_FIX.md](./CERTIFICATE_FIX.md) for detailed solutions
+- Quick fix: Use HTTP profile with `dotnet run --launch-profile http`
+- Access via `http://localhost:5000` instead of HTTPS
 
 **Database connection fails**
 - Verify SQL Server is running

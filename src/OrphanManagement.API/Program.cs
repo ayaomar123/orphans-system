@@ -157,12 +157,20 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Orphan Management API V1");
         c.RoutePrefix = "swagger";
     });
+    
+    // Log available URLs
+    Log.Information("Development mode: Swagger UI available at /swagger");
+    Log.Information("To avoid certificate issues, run with: dotnet run --launch-profile http");
 }
 
 // Global exception handling middleware
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-app.UseHttpsRedirection();
+// HTTPS redirection - can be disabled in development if using HTTP profile
+if (!app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("UseHttpsRedirection", true))
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles(); // For serving uploaded files
 
 app.UseCors("AllowAngularApp");
