@@ -55,8 +55,7 @@ public class EventService : IEventService
             Items = eventDtos,
             TotalCount = pagedEvents.TotalCount,
             PageNumber = pagedEvents.PageNumber,
-            PageSize = pagedEvents.PageSize,
-            TotalPages = pagedEvents.TotalPages
+            PageSize = pagedEvents.PageSize
         };
     }
 
