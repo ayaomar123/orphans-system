@@ -14,9 +14,9 @@ export class AuthService {
   private readonly authSignal = signal<LoginResponse | null>(this.load());
 
   readonly user = computed(() => this.authSignal());
-  readonly token = computed(() => this.authSignal()?.token ?? null);
-  readonly role = computed(() => this.authSignal()?.role ?? null);
-  readonly isLoggedIn = computed(() => !!this.authSignal()?.token);
+  readonly token = computed(() => this.authSignal()?.Token ?? null);
+  readonly role = computed(() => this.authSignal()?.Role ?? null);
+  readonly isLoggedIn = computed(() => !!this.authSignal()?.Token);
 
   constructor(private readonly http: HttpClient) {}
 
