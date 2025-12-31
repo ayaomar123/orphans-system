@@ -55,6 +55,10 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+// TODO: Uncomment these lines once the service implementations are created
+// builder.Services.AddScoped<IOrphanService, OrphanService>();
+// builder.Services.AddScoped<IEventService, EventService>();
+// builder.Services.AddScoped<IUserService, UserService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -168,22 +172,21 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Seed database with default admin user
+// Seed database with initial data
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        var authService = services.GetRequiredService<IAuthService>();
         
         // Apply migrations automatically
         await context.Database.MigrateAsync();
         
-        // Seed default admin user if database is empty
-        await SeedDefaultUser(context, authService);
+        // Seed comprehensive data
+        await DbSeeder.SeedAsync(context);
         
-        Log.Information("Database initialized successfully");
+        Log.Information("Database initialized and seeded successfully");
     }
     catch (Exception ex)
     {
@@ -193,29 +196,3 @@ using (var scope = app.Services.CreateScope())
 
 Log.Information("Starting Orphan Management API...");
 app.Run();
-
-// Helper method to seed default admin user
-static async Task SeedDefaultUser(ApplicationDbContext context, IAuthService authService)
-{
-    if (!await context.Users.AnyAsync())
-    {
-        var adminUser = new User
-        {
-            Id = Guid.NewGuid(),
-            FullName = "System Administrator",
-            Email = "admin@orphan.com",
-            PasswordHash = authService.HashPassword("Admin@123"),
-            Role = OrphanManagement.Domain.Enums.UserRole.Admin,
-            Phone = "+1234567890",
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        context.Users.Add(adminUser);
-        await context.SaveChangesAsync();
-        
-        Log.Information("Default admin user created successfully");
-        Log.Information("Login credentials - Email: admin@orphan.com, Password: Admin@123");
-    }
-}
