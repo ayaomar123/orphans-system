@@ -16,36 +16,122 @@ export class AuthService {
   readonly user = computed(() => this.authSignal());
   readonly token = computed(() => this.authSignal()?.token ?? null);
   readonly role = computed(() => this.authSignal()?.role ?? null);
-  readonly isLoggedIn = computed(() => !!this.authSignal()?.token);
+  readonly isLoggedIn = computed(() => {
+    const auth = this.authSignal();
+    return !!auth?.token;
+  });
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {
+    console.log('AuthService initialized');
+    this.verifyLocalStorage();
+  }
 
   login(request: LoginRequest) {
     return this.http
       .post<ApiResponse<LoginResponse>>(`${environment.apiBaseUrl}/Auth/login`, request)
       .pipe(
         map(unwrapApiResponse),
-        tap((auth) => this.setAuth(auth))
+        tap((auth) => {
+          console.log('Login successful, storing auth data', {
+            hasToken: !!auth.token,
+            tokenLength: auth.token?.length,
+            expiresAt: auth.expiresAt,
+            email: auth.email
+          });
+          this.setAuth(auth);
+        })
       );
   }
 
   logout() {
-    localStorage.removeItem(STORAGE_KEY);
-    this.authSignal.set(null);
+    console.log('Logging out, clearing auth data');
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      this.authSignal.set(null);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   }
 
   private setAuth(auth: LoginResponse) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(auth));
-    this.authSignal.set(auth);
+    try {
+      if (!auth || !auth.token) {
+        console.error('Invalid auth data received:', auth);
+        return;
+      }
+
+      const authData = JSON.stringify(auth);
+      localStorage.setItem(STORAGE_KEY, authData);
+      console.log('Auth data stored in localStorage, length:', authData.length);
+      
+      this.authSignal.set(auth);
+      
+      setTimeout(() => {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) {
+          console.error('WARNING: Auth data was cleared from localStorage immediately after saving!');
+        } else if (stored !== authData) {
+          console.warn('WARNING: Auth data in localStorage differs from what was saved!');
+        } else {
+          console.log('Verified: Auth data persisted in localStorage');
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error storing auth data:', error);
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        console.error('localStorage quota exceeded!');
+      }
+    }
   }
 
   private load(): LoginResponse | null {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as LoginResponse;
-    } catch {
+      if (!raw) {
+        console.log('No auth data found in localStorage');
+        return null;
+      }
+      
+      const auth = JSON.parse(raw) as LoginResponse;
+      console.log('Loaded auth data from localStorage:', {
+        hasToken: !!auth.token,
+        tokenLength: auth.token?.length,
+        expiresAt: auth.expiresAt,
+        email: auth.email
+      });
+      
+      if (auth.expiresAt) {
+        const expiresAt = new Date(auth.expiresAt);
+        const now = new Date();
+        if (expiresAt <= now) {
+          console.warn('Stored token has expired, clearing it');
+          localStorage.removeItem(STORAGE_KEY);
+          return null;
+        }
+      }
+      
+      return auth;
+    } catch (error) {
+      console.error('Error loading auth data from localStorage:', error);
+      localStorage.removeItem(STORAGE_KEY);
       return null;
+    }
+  }
+
+  private verifyLocalStorage() {
+    try {
+      const testKey = 'om.test';
+      localStorage.setItem(testKey, 'test');
+      const value = localStorage.getItem(testKey);
+      localStorage.removeItem(testKey);
+      
+      if (value !== 'test') {
+        console.error('localStorage is not working correctly!');
+      } else {
+        console.log('localStorage is working correctly');
+      }
+    } catch (error) {
+      console.error('localStorage is not available:', error);
     }
   }
 }
