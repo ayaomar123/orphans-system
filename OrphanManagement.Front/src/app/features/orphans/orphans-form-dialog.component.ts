@@ -1,4 +1,3 @@
-import { NgFor, NgIf } from '@angular/common';
 import { Component, Inject, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
@@ -35,8 +34,6 @@ function parseEnumValue<T extends Record<string, number | string>>(enumObj: T, k
   selector: 'app-orphan-form-dialog',
   standalone: true,
   imports: [
-    NgIf,
-    NgFor,
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
@@ -56,7 +53,9 @@ export class OrphanFormDialogComponent {
   private readonly snack = inject(MatSnackBar);
   private readonly dialogRef = inject(MatDialogRef<OrphanFormDialogComponent>);
 
-  readonly isEdit = !!this.data.orphan;
+  get isEdit(): boolean {
+    return !!this.data.orphan;
+  }
   saving = false;
 
   readonly genderOptions = [
