@@ -4,10 +4,10 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
-  expiresAt: string;
-  userId: string;
-  fullName: string;
-  email: string;
-  role: string;
+  Token: string;
+  ExpiresAt: string;
+  UserId: string;
+  FullName: string;
+  Email: string;
+  Role: string;
 }
