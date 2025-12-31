@@ -55,10 +55,9 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register Services
 builder.Services.AddScoped<IAuthService, AuthService>();
-// TODO: Uncomment these lines once the service implementations are created
-// builder.Services.AddScoped<IOrphanService, OrphanService>();
-// builder.Services.AddScoped<IEventService, EventService>();
-// builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IOrphanService, OrphanService>();
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
