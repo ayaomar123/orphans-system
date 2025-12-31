@@ -1,0 +1,95 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit event' : 'New event' }}</h2>
+
+<div mat-dialog-content>
+  <form [formGroup]="form" class="form">
+    <div class="grid">
+      <mat-form-field appearance="outline" class="span-2">
+        <mat-label>Title</mat-label>
+        <input matInput formControlName="title" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="span-2">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="description" rows="2"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Start date</mat-label>
+        <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
+        <mat-datepicker-toggle matSuffix [for]="startPicker" />
+        <mat-datepicker #startPicker />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>End date</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+        <mat-datepicker-toggle matSuffix [for]="endPicker" />
+        <mat-datepicker #endPicker />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="span-2">
+        <mat-label>Location</mat-label>
+        <input matInput formControlName="location" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Event type</mat-label>
+        <mat-select formControlName="eventType">
+          <mat-option *ngFor="let o of eventTypeOptions" [value]="o.value">{{ o.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Max participants</mat-label>
+        <input matInput type="number" formControlName="maxParticipants" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Budget</mat-label>
+        <input matInput type="number" formControlName="budget" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="span-2">
+        <mat-label>Notes</mat-label>
+        <textarea matInput formControlName="notes" rows="3"></textarea>
+      </mat-form-field>
+    </div>
+  </form>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close [disabled]="saving">Cancel</button>
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="saving">
+    <span *ngIf="!saving">Save</span>
+    <span *ngIf="saving" style="display: inline-flex; align-items: center">
+      <mat-progress-spinner diameter="18" mode="indeterminate" />
+    </span>
+  </button>
+</div>
+
+<style>
+  .form {
+    padding-top: 6px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: min(700px, 100%);
+  }
+
+  .span-2 {
+    grid-column: span 2;
+  }
+
+  @media (max-width: 720px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .span-2 {
+      grid-column: span 1;
+    }
+  }
+</style>

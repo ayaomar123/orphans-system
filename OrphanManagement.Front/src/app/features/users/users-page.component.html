@@ -1,0 +1,87 @@
+<div class="container page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Users</h1>
+      <div class="subtitle">Admin-only user management</div>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center">
+      <mat-form-field appearance="outline" style="min-width: 260px">
+        <mat-label>Search</mat-label>
+        <input matInput [formControl]="search" placeholder="Name or email" />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" (click)="openCreate()">
+        <mat-icon>person_add</mat-icon>
+        <span style="margin-left: 6px">New</span>
+      </button>
+    </div>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <div class="om-table-wrap">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z0" style="min-width: 980px">
+          <ng-container matColumnDef="fullName">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let u">
+              <div style="font-weight: 600">{{ u.fullName }}</div>
+              <div class="om-muted" style="font-size: 12px">{{ u.phone || '—' }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let u">{{ u.email }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <td mat-cell *matCellDef="let u">{{ u.role }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="isActive">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let u">
+              <span [style.color]="u.isActive ? '#16a34a' : '#dc2626'">
+                {{ u.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="lastLoginAt">
+            <th mat-header-cell *matHeaderCellDef>Last login</th>
+            <td mat-cell *matCellDef="let u">{{ u.lastLoginAt ? (u.lastLoginAt | date: 'medium') : '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef style="width: 120px">Actions</th>
+            <td mat-cell *matCellDef="let u">
+              <button mat-icon-button matTooltip="Edit" (click)="openEdit(u)">
+                <mat-icon>edit</mat-icon>
+              </button>
+
+              <button mat-icon-button matTooltip="Delete" (click)="delete(u)">
+                <mat-icon color="warn">delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="totalCount"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[5, 10, 20]"
+        (page)="pageChanged($event)"
+      />
+
+      <div *ngIf="loading" class="om-muted" style="padding: 12px">Loading...</div>
+    </mat-card-content>
+  </mat-card>
+</div>
