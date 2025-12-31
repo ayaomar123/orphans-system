@@ -12,7 +12,8 @@ import { AuthService } from '../services/auth.service';
 
 function shouldAttachToken(req: HttpRequest<unknown>) {
   // In this project we use a dev proxy and call the API via relative `/api/...` URLs.
-  return req.url.startsWith('/api');
+  // We also handle cases where the URL might be fully qualified by the browser or dev server.
+  return req.url.startsWith('/api') || req.url.includes('/api/');
 }
 
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
