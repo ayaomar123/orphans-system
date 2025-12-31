@@ -23,9 +23,15 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
 
   const authReq = token && shouldAttachToken(req) ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
+  if (token && shouldAttachToken(req)) {
+    console.log('Attaching token to request:', req.url);
+  }
+
   return next(authReq).pipe(
     catchError((err: unknown) => {
       if (err instanceof HttpErrorResponse && err.status === 401) {
+        console.warn('Received 401 Unauthorized response for:', req.url);
+        console.log('Logging out due to 401 error');
         auth.logout();
         router.navigateByUrl('/login');
       }

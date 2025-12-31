@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left-color: #f44336;
+            background-color: #ffebee;
+        }
+        .success {
+            border-left-color: #4CAF50;
+            background-color: #e8f5e9;
+        }
+        .warning {
+            border-left-color: #ff9800;
+            background-color: #fff3e0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .status {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 localStorage Debugging Tool</h1>
+        <p>This tool helps diagnose localStorage issues with the Orphan Management System.</p>
+        
+        <div id="results"></div>
+        
+        <button onclick="runTests()">Run All Tests</button>
+        <button onclick="checkAuthData()">Check Auth Data</button>
+        <button onclick="clearAuthData()">Clear Auth Data</button>
+        <button onclick="monitorChanges()">Monitor Changes (10s)</button>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'om.auth';
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test ${type}`;
+            div.innerHTML = `<div class="status">${message}</div>`;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function runTests() {
+            document.getElementById('results').innerHTML = '';
+            
+            // Test 1: localStorage availability
+            log('Test 1: Checking localStorage availability...', 'info');
+            try {
+                if (typeof localStorage === 'undefined') {
+                    log('❌ FAIL: localStorage is not available', 'error');
+                } else {
+                    log('✅ PASS: localStorage is available', 'success');
+                }
+            } catch (e) {
+                log(`❌ FAIL: Error accessing localStorage: ${e.message}`, 'error');
+            }
+
+            // Test 2: Write and Read
+            log('Test 2: Testing write and read...', 'info');
+            try {
+                localStorage.setItem('test-key', 'test-value');
+                const value = localStorage.getItem('test-key');
+                if (value === 'test-value') {
+                    log('✅ PASS: Can write and read from localStorage', 'success');
+                } else {
+                    log(`❌ FAIL: Read value (${value}) doesn't match written value`, 'error');
+                }
+                localStorage.removeItem('test-key');
+            } catch (e) {
+                log(`❌ FAIL: Cannot write/read: ${e.message}`, 'error');
+            }
+
+            // Test 3: Persistence test
+            log('Test 3: Testing persistence (checking after 1 second)...', 'info');
+            try {
+                const testData = { timestamp: Date.now(), test: true };
+                localStorage.setItem('persistence-test', JSON.stringify(testData));
+                
+                setTimeout(() => {
+                    const stored = localStorage.getItem('persistence-test');
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        if (parsed.timestamp === testData.timestamp) {
+                            log('✅ PASS: Data persisted for 1 second', 'success');
+                        } else {
+                            log('⚠️ WARNING: Data changed after 1 second', 'warning');
+                        }
+                    } else {
+                        log('❌ FAIL: Data was cleared within 1 second!', 'error');
+                    }
+                    localStorage.removeItem('persistence-test');
+                }, 1000);
+            } catch (e) {
+                log(`❌ FAIL: Persistence test error: ${e.message}`, 'error');
+            }
+
+            // Test 4: Storage quota
+            log('Test 4: Testing storage quota...', 'info');
+            try {
+                const largeData = 'x'.repeat(1024 * 1024); // 1MB
+                localStorage.setItem('quota-test', largeData);
+                localStorage.removeItem('quota-test');
+                log('✅ PASS: Can store at least 1MB', 'success');
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    log('⚠️ WARNING: Storage quota is limited or full', 'warning');
+                } else {
+                    log(`❌ FAIL: Quota test error: ${e.message}`, 'error');
+                }
+            }
+
+            // Test 5: Check current auth data
+            checkAuthData();
+        }
+
+        function checkAuthData() {
+            log('Test 5: Checking current auth data...', 'info');
+            try {
+                const authData = localStorage.getItem(STORAGE_KEY);
+                if (!authData) {
+                    log('⚠️ No auth data found in localStorage', 'warning');
+                } else {
+                    const parsed = JSON.parse(authData);
+                    const pre = document.createElement('pre');
+                    pre.textContent = JSON.stringify(parsed, null, 2);
+                    
+                    const div = document.createElement('div');
+                    div.className = 'test success';
+                    div.innerHTML = '<div class="status">✅ Auth data found:</div>';
+                    div.appendChild(pre);
+                    
+                    if (parsed.expiresAt) {
+                        const expiresAt = new Date(parsed.expiresAt);
+                        const now = new Date();
+                        const diff = expiresAt - now;
+                        const minutes = Math.floor(diff / 1000 / 60);
+                        
+                        const expDiv = document.createElement('div');
+                        if (diff > 0) {
+                            expDiv.innerHTML = `<strong>Token expires in:</strong> ${minutes} minutes`;
+                            expDiv.style.color = minutes < 5 ? 'orange' : 'green';
+                        } else {
+                            expDiv.innerHTML = '<strong style="color: red;">Token has EXPIRED!</strong>';
+                        }
+                        div.appendChild(expDiv);
+                    }
+                    
+                    document.getElementById('results').appendChild(div);
+                }
+            } catch (e) {
+                log(`❌ Error checking auth data: ${e.message}`, 'error');
+            }
+        }
+
+        function clearAuthData() {
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+                log('✅ Auth data cleared from localStorage', 'success');
+            } catch (e) {
+                log(`❌ Error clearing auth data: ${e.message}`, 'error');
+            }
+        }
+
+        function monitorChanges() {
+            log('Monitoring localStorage changes for 10 seconds...', 'info');
+            
+            const initialState = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                initialState[key] = localStorage.getItem(key);
+            }
+            
+            let checkCount = 0;
+            const interval = setInterval(() => {
+                checkCount++;
+                
+                // Check for changes
+                const currentKeys = new Set();
+                for (let i = 0; i < localStorage.length; i++) {
+                    currentKeys.add(localStorage.key(i));
+                }
+                
+                // Check for removed keys
+                for (const key in initialState) {
+                    if (!currentKeys.has(key)) {
+                        log(`⚠️ Key removed: ${key}`, 'warning');
+                    } else if (localStorage.getItem(key) !== initialState[key]) {
+                        log(`⚠️ Key changed: ${key}`, 'warning');
+                    }
+                }
+                
+                // Check for new keys
+                currentKeys.forEach(key => {
+                    if (!(key in initialState)) {
+                        log(`✅ New key added: ${key}`, 'success');
+                        initialState[key] = localStorage.getItem(key);
+                    }
+                });
+                
+                if (checkCount >= 10) {
+                    clearInterval(interval);
+                    log('✅ Monitoring complete. No unexpected changes detected.', 'success');
+                }
+            }, 1000);
+        }
+
+        // Auto-run tests on load
+        window.onload = () => {
+            log('🚀 localStorage Debug Tool Ready', 'info');
+            log('Click "Run All Tests" to diagnose issues', 'info');
+        };
+    </script>
+</body>
+</html>
