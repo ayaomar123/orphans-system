@@ -1,3 +1,4 @@
+using OrphanManagement.Domain.Common;
 using OrphanManagement.Domain.Enums;
 
 namespace OrphanManagement.Domain.Entities;
@@ -6,7 +7,7 @@ namespace OrphanManagement.Domain.Entities;
 /// Represents the many-to-many relationship between Orphans and Events.
 /// Tracks which orphans are participating in which events and their attendance status.
 /// </summary>
-public class OrphanEvent
+public class OrphanEvent : BaseEntity
 {
     /// <summary>
     /// Foreign key to the Orphan entity
